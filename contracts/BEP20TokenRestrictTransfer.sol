@@ -16,9 +16,16 @@ contract BEP20TokenRestrictTransfer is BEP20Token {
         if(isOwner(sender)) {
             return;
         }
+    }
+
+    function _beforeTokenTransferFrom(address caller, address sender, address recipient, uint256 amount) internal override {
+        if(_allowances[sender][caller] >= amount) {
+            return;
+        }
 
         revert("Cannot transfer");
     }
+
 
     function enableTransfer() public onlyOwner {
         _enable = true;
